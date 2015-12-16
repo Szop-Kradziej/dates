@@ -1,14 +1,18 @@
 package com.drabarz.karola.dates;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class CameraActivity extends AppCompatActivity {
 
@@ -49,8 +53,25 @@ public class CameraActivity extends AppCompatActivity {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
-            extractColorHashes(imageBitmap);
+            List<Integer> colorHashes = extractColorHashes(imageBitmap);
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            sharedPreferences.edit().putStringSet("colors", toStringSet(colorHashes));
+
+            startStyleActivity();
         }
+    }
+
+    void startStyleActivity() {
+        startActivity(new Intent(this, StyleActivity.class));
+    }
+
+    private Set<String> toStringSet(List<Integer> colorHashes) {
+        HashSet<String> colorStringSet = new HashSet<>();
+        for (Integer colorHash : colorHashes) {
+            colorStringSet.add(colorHash.toString());
+        }
+
+        return colorStringSet;
     }
 
     private List<Integer> extractColorHashes(Bitmap imageBitmap) {
